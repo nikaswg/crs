@@ -76,6 +76,7 @@
             overflow: hidden;
             width: 100%;
             max-width: 300px;
+            -webkit-appearance: none;
         }
 
         .btn:hover, .btn:active {
@@ -134,22 +135,30 @@
             justify-content: center;
             align-items: center;
             z-index: 100;
+            flex-direction: column;
         }
 
-        .video-container video {
+        .youtube-player {
             width: 100%;
-            height: auto;
-            max-height: 80%;
+            max-width: 560px;
+            height: 315px;
+            border: none;
         }
 
         .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+            position: relative;
             color: white;
             font-size: 2rem;
             cursor: pointer;
             z-index: 101;
+            margin-top: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* iOS specific fixes */
@@ -174,18 +183,19 @@
     </div>
 
     <div class="video-container" id="videoContainer">
-        <span class="close-btn" id="closeBtn">×</span>
-        <video id="surpriseVideo" controls playsinline webkit-playsinline>
-            <source src="vid.mp4" type="video/mp4">
-            Ваш браузер не поддерживает видео.
-        </video>
+        <iframe id="youtubePlayer" class="youtube-player" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <div class="close-btn" id="closeBtn">×</div>
     </div>
 
     <script>
         const surpriseBtn = document.getElementById('surpriseBtn');
         const videoContainer = document.getElementById('videoContainer');
-        const surpriseVideo = document.getElementById('surpriseVideo');
+        const youtubePlayer = document.getElementById('youtubePlayer');
         const closeBtn = document.getElementById('closeBtn');
+        
+        // Замените этот ID на ID вашего YouTube видео (после v= в URL)
+        const youtubeVideoId = "dQw4w9WgXcQ"; // Пример: Rick Astley - Never Gonna Give You Up
+        // Для своего видео замените на что-то вроде "ваш_идентификатор_видео"
 
         // Функция для создания конфетти (оптимизированная для мобильных)
         function createConfetti() {
@@ -221,21 +231,11 @@
             // Запускаем конфетти
             createConfetti();
             
-            // Показываем видео
+            // Показываем контейнер с видео
             videoContainer.style.display = 'flex';
             
-            // Устанавливаем максимальную громкость
-            surpriseVideo.volume = 1.0;
-            
-            // Воспроизводим видео (замените ссылку на реальное видео)
-            surpriseVideo.play().then(() => {
-                // Автовоспроизведение началось
-            }).catch(e => {
-                // На iOS требуется действие пользователя для воспроизведения звука
-                console.log("Автовоспроизведение не сработало:", e);
-                // Показываем уведомление, что нужно нажать на видео
-                alert("Нажмите на видео для воспроизведения!");
-            });
+            // Загружаем YouTube видео с автовоспроизведением и звуком
+            youtubePlayer.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=0&enablejsapi=1&controls=1&rel=0`;
             
             // Вибрация (если поддерживается)
             if (navigator.vibrate) {
@@ -243,24 +243,24 @@
             } else if (window.navigator && window.navigator.vibrate) {
                 window.navigator.vibrate([200, 100, 200]);
             }
+            
+            // На iOS может потребоваться действие пользователя для звука
+            // Поэтому можно добавить подсказку
+            alert("Наслаждайтесь громким видео! 🎵");
         }
 
         // Добавляем обработчики и для touch, и для click
         surpriseBtn.addEventListener('click', handleButtonClick);
         surpriseBtn.addEventListener('touchend', handleButtonClick);
 
-        closeBtn.addEventListener('click', () => {
+        // Функция для закрытия видео
+        function closeVideo() {
             videoContainer.style.display = 'none';
-            surpriseVideo.pause();
-            surpriseVideo.currentTime = 0;
-        });
+            youtubePlayer.src = ""; // Останавливаем видео
+        }
 
-        // Для iOS добавляем обработчик touchend для закрытия
-        closeBtn.addEventListener('touchend', () => {
-            videoContainer.style.display = 'none';
-            surpriseVideo.pause();
-            surpriseVideo.currentTime = 0;
-        });
+        closeBtn.addEventListener('click', closeVideo);
+        closeBtn.addEventListener('touchend', closeVideo);
 
         // Предотвращаем скролл при открытом видео
         videoContainer.addEventListener('touchmove', (e) => {
